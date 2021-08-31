@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+classes="$@"
+
+bspc subscribe node_add | while read id; do
+    sleep 0.1
+
+    id=$(echo $id | cut -d ' ' -f5)
+
+    [[ -z $(bspc query -N -n $id.!floating) ]] && continue
+
+    info="$(xprop -id $id 8s '\t$0' WM_CLASS)"
+    focusedid=$(bspc query -N -n)
+
+    [[ $? -eq 0 ]] || continue
+
+    class="$(echo "$info" | cut -f2 | tr -d '"')"
+
+    if [[ "$classes" =~ "$class" ]]; then
+        tabc create $focusedid
+    fi
+done

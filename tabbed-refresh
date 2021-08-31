@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+bspc subscribe node_geometry | while read id; do
+    [[ -z $(bspc query -N -n .local.fullscreen) ]] || continue
+
+    id=$(echo $id | cut -d ' ' -f4)
+    class="$(xprop -id $id 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"')"
+
+    if [[ "$class" == "tabbed" ]]; then
+        focusedid=$(bspc query -N -n)
+
+        if [[ "$id" != "$focusedid" ]]; then
+            bspc node -f $id
+            bspc node -f $focusedid
+        fi
+    fi
+done

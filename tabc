@@ -1,0 +1,207 @@
+#!/usr/bin/env bash
+
+program_name="$(basename "$0")"
+
+usage() {
+printf "%s" "\
+usage: $program_name <command>
+
+commands:
+    create <wid>            create new tabbed container and add window <wid>.
+    attach <wid0> <wid1>    attach window <wid0> to tabbed container <wid1> (if
+                            it isn't one, create it first).
+    detach <wid>            detach active window from tabbed container <wid>.
+    autoattach <wid>        toggle autoattach new windows to tabbed container
+                            <wid> (enabled by default).
+"
+
+exit 1
+}
+
+get_root_wid() {
+	xwininfo -root | awk '/Window id:/{print $4}'
+}
+
+get_children() {
+	id=$1
+
+	xwininfo -id $id -children | awk '$1 ~ /0x.*/{print $1}'
+}
+
+get_class() {
+	id=$1
+
+    xprop -id $id 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"'
+}
+
+create() {
+    id=$1
+
+    if [[ "$(get_class $id)" == "tabbed" ]]; then
+        printf "error: window is a tabbed container\n" >&2
+        exit 1
+    fi
+
+    bspc config -n $id border_width 0
+
+    tabbedid=$(tabbed -c -d -k) 
+
+    xdotool windowreparent $id $tabbedid
+
+    tabbedid0=$(bspc query -N -n)
+
+    tabbed-sub "$tabbedid0" &
+    tabbed-unsub "$tabbedid0" &
+}
+
+detach() {
+    id=$1
+
+    if [[ "$(get_class $id)" != "tabbed" ]]; then
+        printf "error: window is not a tabbed container\n" >&2
+        exit 1
+    fi
+
+    tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
+
+    if [[ ! -z $tabbedsub_parentpx ]]; then
+        tabbedsub_px=$(pgrep -P $tabbedsub_parentpx -f "bspc")
+        kill $tabbedsub_px
+    fi
+
+    childid=$(get_children $id | head -n1)
+    rootid=$(get_root_wid)
+
+    xdotool windowreparent $childid $rootid
+
+    childrenid=$(get_children $id)
+
+    if [[ ! -z $childrenid ]]; then
+        newtabbedid=$(tabbed -c -d -k)
+
+        for child in $childrenid; do
+            xdotool windowreparent $child $rootid
+            bspc config -n $child border_width 0
+        done
+
+        for child in $childrenid; do
+            xdotool windowreparent $child $newtabbedid
+        done
+
+        bspc node -s $childid
+
+        newtabbedid0=$(bspc query -N -n)
+
+        if [[ ! -z $tabbedsub_parentpx ]]; then
+            tabbed-sub "$newtabbedid0" &
+            tabbed-unsub "$newtabbedid0" &
+        fi
+
+        bspc node -f $childid
+    fi
+}
+
+attach() {
+    focusedid=$1
+    otherid=$2
+
+    if [[ -z $otherid ]]; then
+        printf "error: id of window to attach not specified\n" >&2
+        exit 1
+    fi
+
+    if [[ "$(get_class $focusedid)" == "tabbed" ]]; then
+        detach $focusedid
+        focusedid=$(bspc query -N -n)
+    fi
+
+    if [[ "$(get_class $otherid)" != "tabbed" ]]; then
+        bspc node -f $otherid
+        create $otherid
+    else
+        tabbedid=$otherid
+    fi
+
+    bspc config -n $focusedid border_width 0
+
+    xdotool windowreparent $focusedid $tabbedid
+
+    bspc node -f $tabbedid
+}
+
+autoattach() {
+    id=$1
+
+    if [[ "$(get_class $id)" != "tabbed" ]]; then
+        printf "error: window is not a tabbed container\n" >&2 
+        exit 1
+    fi
+
+    tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
+    tabbedunsub_parentpx=$(pgrep -fo "tabbed-unsub $id")
+
+    if [[ -z $tabbedsub_parentpx ]]; then
+        if [[ -z $tabbedunsub_parentpx ]]; then
+            tabbed-sub "$id" &
+            tabbed-unsub "$id" &
+        else
+            printf "error: subscription process found, but unsubscription process not found\n" >&2
+
+            tabbedsub_px=$(pgrep -P $tabbedsub_parentpx -f "bspc")
+
+            kill $tabbedsub_px
+
+            exit 1
+        fi
+    else
+        if [[ -z $tabbedsub_parentpx ]]; then
+            printf "error: unsubscription process found, but subscription process not found\n" >&2
+
+            tabbedunsub_px=$(pgrep -P $tabbedunsub_parentpx -f "bspc")
+
+            kill $tabbedunsub_px
+
+            exit 1
+        else
+            tabbedsub_px=$(pgrep -P $tabbedsub_parentpx -f "bspc")
+            tabbedunsub_px=$(pgrep -P $tabbedunsub_parentpx -f "bspc")
+
+            kill $tabbedsub_px
+            kill $tabbedunsub_px
+        fi
+    fi
+}
+
+get_command() {
+    case "$1" in
+        create)
+            shift
+            create "$@"
+        ;;
+        attach)
+            shift
+            attach "$@"
+        ;;
+        detach)
+            shift
+            detach "$@"
+        ;;
+        autoattach)
+            shift
+            autoattach "$@"
+        ;;
+        *)
+            usage
+        ;;
+    esac
+}
+
+main() {
+    [[ "$#" -le 1 ]] && usage
+
+    get_command "$@"
+
+    return 0
+}
+
+main "$@"
