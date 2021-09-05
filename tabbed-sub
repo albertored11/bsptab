@@ -5,7 +5,7 @@ id=$1
 bspc subscribe node_add | while read node; do
     node=$(echo $node | cut -d ' ' -f5)
 
-    [[ -z $(bspc query -N -n $node.!floating) ]] && continue
+    [[ -z $(bspc query -N -n $node.tiled) ]] && continue
 
     if [[ "$(bspc query -N $node -n @brother)" == "$id" ]]; then
         bspc config -n $node border_width 0
