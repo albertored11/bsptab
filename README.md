@@ -160,3 +160,7 @@ super + z
 super + shift + z 
     tabc autoattach $(bspc query -N -n) 
 ```
+
+### TODO
+
+* [ ] Somehow fix a bug that makes the tab order to mess up when detaching a window.
