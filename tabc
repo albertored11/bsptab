@@ -28,6 +28,12 @@ get_children() {
 	xwininfo -id $id -children | awk '$1 ~ /0x.*/{print $1}'
 }
 
+get_children_no() {
+    id=$1
+
+    xwininfo -id $id -children | awk '$2 ~ /children/{print $1}'
+}
+
 get_class() {
 	id=$1
 
@@ -73,6 +79,20 @@ detach() {
     rootid=$(get_root_wid)
 
     xdotool windowreparent $childid $rootid
+
+    children_no=$(get_children_no $id)
+
+    if [[ $children_no -le 10 ]]; then
+        if [[ $children_no -eq 10 ]]; then
+            xdotool key alt+0
+            sleep 0.1
+        fi
+
+        for ((i=children_no; i>=1; --i)); do
+            xdotool key alt+$i
+            sleep 0.1
+        done
+    fi
 
     childrenid=$(get_children $id)
 

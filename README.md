@@ -163,4 +163,5 @@ super + shift + z
 
 ### TODO
 
-* [ ] Somehow fix a bug that makes the tab order to mess up when detaching a window.
+* [x] Somehow fix a bug that makes the tab order to mess up when detaching a window.
+* [ ] When detaching a window, focus next tab to detached (prev tab if it was the last one).
