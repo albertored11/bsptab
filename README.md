@@ -1,5 +1,7 @@
 # bsptab
 
+![AUR license](https://img.shields.io/aur/license/bsptab-git) ![AUR version](https://img.shields.io/aur/version/bsptab-git)
+
 bsptab is a collection of bash scripts for integrating [tabbed](https://tools.suckless.org/tabbed/),
 a tool from [suckless](https://suckless.org/) to create tabbed containers in X environments, into
 [bspwm](https://github.com/baskerville/bspwm), a tiling window manager based on binary space
@@ -14,6 +16,8 @@ This project is based on [Bachhofer/tabc](https://github.com/Bachhofer/tabc).
 Please open an issue/pull request if you find any kind of bug, if you want any new features, or
 especially if you think any part of the code should be rewritten in a better way, since I am not
 a bash expert at all.
+
+**New!** bsptab is now available as [an AUR package](https://aur.archlinux.org/packages/bsptab-git/).
 
 ## Features
 
@@ -109,6 +113,8 @@ static Key keys[] = {
 ## Installation
 
 Just clone the repo and run `make install` inside the repo directory.
+
+If you are using a pacman-based distro (Arch, Manjaro...), you can use [the AUR package](https://aur.archlinux.org/packages/bsptab-git/).
 
 ## Usage
 
