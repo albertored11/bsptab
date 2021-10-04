@@ -6,8 +6,12 @@ bspc subscribe node_remove | while read node; do
     node=$(echo $node | cut -d ' ' -f4)
 
     if [[ "$node" == "$id" ]]; then
-        tabbedsub_px=$(pgrep -P $(pgrep -fo "tabbed-sub $id") -f "bspc")
-        kill $tabbedsub_px
+        tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
+
+        if [[ ! -z $tabbedsub_parentpx ]]; then
+            tabbedsub_px=$(pgrep -P $tabbedsub_parentpx -f "bspc")
+            kill $tabbedsub_px
+        fi
         exit 0
     fi
 done
