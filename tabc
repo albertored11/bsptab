@@ -31,7 +31,7 @@ get_children() {
 get_children_no() {
     id=$1
 
-    xwininfo -id $id -children | awk '$2 ~ /children/{print $1}'
+    xwininfo -id $id -children | awk '$2 ~ /child|children/{print $1}'
 }
 
 get_class() {
@@ -91,12 +91,15 @@ detach() {
         kill $tabbedsub_px
     fi
 
+    children_no=$(get_children_no $id)
     childid=$(get_children $id | head -n1)
     rootid=$(get_root_wid)
 
     xdotool windowreparent $childid $rootid
 
-    children_no=$(get_children_no $id)
+    children_no=$((children_no - 1))
+
+    [[ $children_no -eq 0 ]] && return
 
     if [[ $children_no -le 10 ]]; then
         if [[ $children_no -eq 10 ]]; then
