@@ -2,15 +2,15 @@
 
 id=$1
 
-bspc subscribe node_remove | while read node; do
-    node=$(echo $node | cut -d ' ' -f4)
+bspc subscribe node_remove | while read -r node; do
+    node=$(echo "$node" | cut -d ' ' -f4)
 
     if [[ "$node" == "$id" ]]; then
         tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
 
-        if [[ ! -z $tabbedsub_parentpx ]]; then
-            tabbedsub_px=$(pgrep -P $tabbedsub_parentpx -f "bspc")
-            kill $tabbedsub_px
+        if [[ -n $tabbedsub_parentpx ]]; then
+            tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx" -f "bspc")
+            kill "$tabbedsub_px"
         fi
         exit 0
     fi

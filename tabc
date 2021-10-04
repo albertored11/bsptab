@@ -25,45 +25,45 @@ get_root_wid() {
 get_children() {
 	id=$1
 
-	xwininfo -id $id -children | awk '$1 ~ /0x.*/{print $1}'
+	xwininfo -id "$id" -children | awk '$1 ~ /0x.*/{print $1}'
 }
 
 get_children_no() {
     id=$1
 
-    xwininfo -id $id -children | awk '$2 ~ /child|children/{print $1}'
+    xwininfo -id "$id" -children | awk '$2 ~ /child|children/{print $1}'
 }
 
 get_class() {
 	id=$1
 
-    xprop -id $id 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"'
+    xprop -id "$id" 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"'
 }
 
 node_is_window() {
     id=$1
 
-    bspc query -N -n $id.window &> /dev/null
+    bspc query -N -n "$id".window &> /dev/null
 }
 
 create() {
     id=$1
 
-    if ! node_is_window $id; then
+    if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
         exit 1
     fi
 
-    if [[ "$(get_class $id)" == "tabbed" ]]; then
+    if [[ "$(get_class "$id")" == "tabbed" ]]; then
         printf "error: window is a tabbed container\n" >&2
         exit 1
     fi
 
-    bspc config -n $id border_width 0
+    bspc config -n "$id" border_width 0
 
     tabbedid=$(tabbed -c -d -k) 
 
-    xdotool windowreparent $id $tabbedid
+    xdotool windowreparent "$id" "$tabbedid"
 
     tabbedid0=$(bspc query -N -n)
 
@@ -74,28 +74,28 @@ create() {
 detach() {
     id=$1
 
-    if ! node_is_window $id; then
+    if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
         exit 1
     fi
 
-    if [[ "$(get_class $id)" != "tabbed" ]]; then
+    if [[ "$(get_class "$id")" != "tabbed" ]]; then
         printf "error: window is not a tabbed container\n" >&2
         exit 1
     fi
 
     tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
 
-    if [[ ! -z $tabbedsub_parentpx ]]; then
-        tabbedsub_px=$(pgrep -P $tabbedsub_parentpx -f "bspc")
-        kill $tabbedsub_px
+    if [[ -n $tabbedsub_parentpx ]]; then
+        tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx" -f "bspc")
+        kill "$tabbedsub_px"
     fi
 
-    children_no=$(get_children_no $id)
-    childid=$(get_children $id | head -n1)
+    children_no=$(get_children_no "$id")
+    childid=$(get_children "$id" | head -n1)
     rootid=$(get_root_wid)
 
-    xdotool windowreparent $childid $rootid
+    xdotool windowreparent "$childid" "$rootid"
 
     children_no=$((children_no - 1))
 
@@ -108,35 +108,35 @@ detach() {
         fi
 
         for ((i=children_no; i>=1; --i)); do
-            xdotool key alt+$i
+            xdotool key alt+"$i"
             sleep 0.1
         done
     fi
 
-    childrenid=$(get_children $id)
+    childrenid=$(get_children "$id")
 
-    if [[ ! -z $childrenid ]]; then
+    if [[ -n $childrenid ]]; then
         newtabbedid=$(tabbed -c -d -k)
 
         for child in $childrenid; do
-            xdotool windowreparent $child $rootid
-            bspc config -n $child border_width 0
+            xdotool windowreparent "$child" "$rootid"
+            bspc config -n "$child" border_width 0
         done
 
         for child in $childrenid; do
-            xdotool windowreparent $child $newtabbedid
+            xdotool windowreparent "$child" "$newtabbedid"
         done
 
-        bspc node -s $childid
+        bspc node -s "$childid"
 
         newtabbedid0=$(bspc query -N -n)
 
-        if [[ ! -z $tabbedsub_parentpx ]]; then
+        if [[ -n $tabbedsub_parentpx ]]; then
             tabbed-sub "$newtabbedid0" &
             tabbed-unsub "$newtabbedid0" &
         fi
 
-        bspc node -f $childid
+        bspc node -f "$childid"
     fi
 }
 
@@ -149,44 +149,44 @@ attach() {
         exit 1
     fi
 
-    if ! node_is_window $focusedid; then
+    if ! node_is_window "$focusedid"; then
         printf "error: first node is not a window\n" >&2
         exit 1
     fi
 
-    if ! node_is_window $otherid; then
+    if ! node_is_window "$otherid"; then
         printf "error: second node is not a window\n" >&2
         exit 1
     fi
 
-    if [[ "$(get_class $focusedid)" == "tabbed" ]]; then
-        detach $focusedid
+    if [[ "$(get_class "$focusedid")" == "tabbed" ]]; then
+        detach "$focusedid"
         focusedid=$(bspc query -N -n)
     fi
 
-    if [[ "$(get_class $otherid)" != "tabbed" ]]; then
-        bspc node -f $otherid
-        create $otherid
+    if [[ "$(get_class "$otherid")" != "tabbed" ]]; then
+        bspc node -f "$otherid"
+        create "$otherid"
     else
         tabbedid=$otherid
     fi
 
-    bspc config -n $focusedid border_width 0
+    bspc config -n "$focusedid" border_width 0
 
-    xdotool windowreparent $focusedid $tabbedid
+    xdotool windowreparent "$focusedid" "$tabbedid"
 
-    bspc node -f $tabbedid
+    bspc node -f "$tabbedid"
 }
 
 autoattach() {
     id=$1
 
-    if ! node_is_window $id; then
+    if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
         exit 1
     fi
 
-    if [[ "$(get_class $id)" != "tabbed" ]]; then
+    if [[ "$(get_class "$id")" != "tabbed" ]]; then
         printf "error: window is not a tabbed container\n" >&2 
         exit 1
     fi
@@ -201,9 +201,9 @@ autoattach() {
         else
             printf "error: subscription process found, but unsubscription process not found\n" >&2
 
-            tabbedsub_px=$(pgrep -P $tabbedsub_parentpx -f "bspc")
+            tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx" -f "bspc")
 
-            kill $tabbedsub_px
+            kill "$tabbedsub_px"
 
             exit 1
         fi
@@ -211,17 +211,17 @@ autoattach() {
         if [[ -z $tabbedsub_parentpx ]]; then
             printf "error: unsubscription process found, but subscription process not found\n" >&2
 
-            tabbedunsub_px=$(pgrep -P $tabbedunsub_parentpx -f "bspc")
+            tabbedunsub_px=$(pgrep -P "$tabbedunsub_parentpx" -f "bspc")
 
-            kill $tabbedunsub_px
+            kill "$tabbedunsub_px"
 
             exit 1
         else
-            tabbedsub_px=$(pgrep -P $tabbedsub_parentpx -f "bspc")
-            tabbedunsub_px=$(pgrep -P $tabbedunsub_parentpx -f "bspc")
+            tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx" -f "bspc")
+            tabbedunsub_px=$(pgrep -P "$tabbedunsub_parentpx" -f "bspc")
 
-            kill $tabbedsub_px
-            kill $tabbedunsub_px
+            kill "$tabbedsub_px"
+            kill "$tabbedunsub_px"
         fi
     fi
 }
