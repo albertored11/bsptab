@@ -40,8 +40,19 @@ get_class() {
     xprop -id $id 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"'
 }
 
+node_is_window() {
+    id=$1
+
+    bspc query -N -n $id.window &> /dev/null
+}
+
 create() {
     id=$1
+
+    if ! node_is_window $id; then
+        printf "error: node is not a window\n" >&2
+        exit 1
+    fi
 
     if [[ "$(get_class $id)" == "tabbed" ]]; then
         printf "error: window is a tabbed container\n" >&2
@@ -62,6 +73,11 @@ create() {
 
 detach() {
     id=$1
+
+    if ! node_is_window $id; then
+        printf "error: node is not a window\n" >&2
+        exit 1
+    fi
 
     if [[ "$(get_class $id)" != "tabbed" ]]; then
         printf "error: window is not a tabbed container\n" >&2
@@ -130,6 +146,16 @@ attach() {
         exit 1
     fi
 
+    if ! node_is_window $focusedid; then
+        printf "error: first node is not a window\n" >&2
+        exit 1
+    fi
+
+    if ! node_is_window $otherid; then
+        printf "error: second node is not a window\n" >&2
+        exit 1
+    fi
+
     if [[ "$(get_class $focusedid)" == "tabbed" ]]; then
         detach $focusedid
         focusedid=$(bspc query -N -n)
@@ -151,6 +177,11 @@ attach() {
 
 autoattach() {
     id=$1
+
+    if ! node_is_window $id; then
+        printf "error: node is not a window\n" >&2
+        exit 1
+    fi
 
     if [[ "$(get_class $id)" != "tabbed" ]]; then
         printf "error: window is not a tabbed container\n" >&2 
