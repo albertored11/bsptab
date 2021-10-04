@@ -24,6 +24,7 @@ a bash expert at all.
 * Adds tabbed layouts to bspwm.
 * Each tabbed container handles multiple windows, but not any more tabbed containers.
 * Automatically attach new windows to tabbed containers.
+* Only uses external scripts, without modifying original tabbed code.
 
 ## Demos
 
