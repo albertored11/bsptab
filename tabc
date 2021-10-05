@@ -114,12 +114,9 @@ detach() {
         exit 1
     fi
 
-    tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
+    tabbedsub_px=$(pgrep -fo "tabbed-sub $id")
 
-    if [[ -n $tabbedsub_parentpx ]]; then
-        tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx")
-        kill "$tabbedsub_px"
-    fi
+    [[ -n $tabbedsub_px ]] && kill "$tabbedsub_px"
 
     children_no=$(get_children_no "$id")
     childid=$(head 1 <(get_children "$id"))
@@ -161,7 +158,7 @@ detach() {
 
         newtabbedid0=$(bspc query -N -n)
 
-        if [[ -n $tabbedsub_parentpx ]]; then
+        if [[ -n $tabbedsub_px ]]; then
             tabbed-sub "$newtabbedid0" &
             tabbed-unsub "$newtabbedid0" &
         fi
@@ -221,35 +218,28 @@ autoattach() {
         exit 1
     fi
 
-    tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
-    tabbedunsub_parentpx=$(pgrep -fo "tabbed-unsub $id")
+    tabbedsub_px=$(pgrep -fo "tabbed-sub $id")
+    tabbedunsub_px=$(pgrep -fo "tabbed-unsub $id")
 
-    if [[ -z $tabbedsub_parentpx ]]; then
-        if [[ -z $tabbedunsub_parentpx ]]; then
+    if [[ -z $tabbedsub_px ]]; then
+        if [[ -z $tabbedunsub_px ]]; then
             tabbed-sub "$id" &
             tabbed-unsub "$id" &
         else
             printf "error: subscription process found, but unsubscription process not found\n" >&2
-
-            tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx")
 
             kill "$tabbedsub_px"
 
             exit 1
         fi
     else
-        if [[ -z $tabbedsub_parentpx ]]; then
+        if [[ -z $tabbedsub_px ]]; then
             printf "error: unsubscription process found, but subscription process not found\n" >&2
-
-            tabbedunsub_px=$(pgrep -P "$tabbedunsub_parentpx")
 
             kill "$tabbedunsub_px"
 
             exit 1
         else
-            tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx")
-            tabbedunsub_px=$(pgrep -P "$tabbedunsub_parentpx")
-
             kill "$tabbedsub_px"
             kill "$tabbedunsub_px"
         fi

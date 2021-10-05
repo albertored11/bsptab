@@ -12,12 +12,10 @@ id=$1
     node="$(split "$node" " " 3)"
 
     if [[ "$node" == "$id" ]]; then
-        tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
+        tabbedsub_px=$(pgrep -fo "tabbed-sub $id")
 
-        if [[ -n $tabbedsub_parentpx ]]; then
-            tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx")
-            kill "$tabbedsub_px"
-        fi
+        [[ -n $tabbedsub_px ]] && kill "$tabbedsub_px"
+
         exit 0
     fi
 done < <(bspc subscribe node_remove)
