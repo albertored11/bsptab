@@ -15,7 +15,7 @@ id=$1
         tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
 
         if [[ -n $tabbedsub_parentpx ]]; then
-            tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx" -f "bspc")
+            tabbedsub_px=$(pgrep -P "$tabbedsub_parentpx")
             kill "$tabbedsub_px"
         fi
         exit 0
