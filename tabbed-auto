@@ -1,20 +1,48 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2086,SC2048
+trim_all() {
+    # Usage: trim_all "   example   string    "
+    set -f
+    set -- $*
+    printf '%s\n' "$*"
+    set +f
+}
+
+split() {
+    # Usage: split "string" "delimiter" "field"
+    IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
+    printf '%s\n' "${arr[$3]}"
+}
+
+trim_quotes() {
+    # Usage: trim_quotes "string"
+    : "${1//\'}"
+    printf '%s\n' "${_//\"}"
+}
+
+get_class() {
+	id=$1
+
+    class="$(xprop -id "$id" 8s '\t$0' WM_CLASS)"
+    class="$(trim_all "$class")"
+    class="$(split "$class" " " 1)"
+    trim_quotes "$class"
+}
+
 classes="$*"
 
-bspc subscribe node_add | while read -r id; do
+while IFS= read -r id; do
     sleep 0.1
 
-    id=$(echo "$id" | cut -d ' ' -f5)
+    id="$(split "$id" " " 4)"
 
-    [[ -z $(bspc query -N -n "$id".tiled) ]] && continue
+    bspc query -N -n "$id".tiled &> /dev/null || continue
 
-    info="$(xprop -id "$id" 8s '\t$0' WM_CLASS)"
+    class="$(get_class "$id")"
     focusedid=$(bspc query -N -n) || continue
-
-    class="$(echo "$info" | cut -f2 | tr -d '"')"
 
     if [[ "$classes" =~ $class ]]; then
         tabc create "$focusedid"
     fi
-done
+done < <(bspc subscribe node_add)

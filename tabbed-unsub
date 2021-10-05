@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+split() {
+    # Usage: split "string" "delimiter" "field"
+    IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
+    printf '%s\n' "${arr[$3]}"
+}
+
 id=$1
 
-bspc subscribe node_remove | while read -r node; do
-    node=$(echo "$node" | cut -d ' ' -f4)
+ while IFS= read -r node; do
+    node="$(split "$node" " " 3)"
 
     if [[ "$node" == "$id" ]]; then
         tabbedsub_parentpx=$(pgrep -fo "tabbed-sub $id")
@@ -14,4 +20,4 @@ bspc subscribe node_remove | while read -r node; do
         fi
         exit 0
     fi
-done
+done < <(bspc subscribe node_remove)

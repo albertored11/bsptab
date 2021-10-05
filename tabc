@@ -18,26 +18,56 @@ commands:
 exit 1
 }
 
+# shellcheck disable=SC2086,SC2048
+trim_all() {
+    # Usage: trim_all "   example   string    "
+    set -f
+    set -- $*
+    printf '%s\n' "$*"
+    set +f
+}
+
+split() {
+    # Usage: split "string" "delimiter" "field"
+    IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
+    printf '%s\n' "${arr[$3]}"
+}
+
+trim_quotes() {
+    # Usage: trim_quotes "string"
+    : "${1//\'}"
+    printf '%s\n' "${_//\"}"
+}
+
+head() {
+    # Usage: head "n" "file"
+    mapfile -tn "$1" line < "$2"
+    printf '%s\n' "${line[@]}"
+}
+
 get_root_wid() {
-	xwininfo -root | awk '/Window id:/{print $4}'
+	awk '/Window id:/{print $4}' <(xwininfo -root)
 }
 
 get_children() {
 	id=$1
 
-	xwininfo -id "$id" -children | awk '$1 ~ /0x.*/{print $1}'
+	awk '$1 ~ /0x.*/{print $1}' <(xwininfo -id "$id" -children)
 }
 
 get_children_no() {
     id=$1
 
-    xwininfo -id "$id" -children | awk '$2 ~ /child|children/{print $1}'
+    awk '$2 ~ /child|children/{print $1}' <(xwininfo -id "$id" -children)
 }
 
 get_class() {
 	id=$1
 
-    xprop -id "$id" 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"'
+    class="$(xprop -id "$id" 8s '\t$0' WM_CLASS)"
+    class="$(trim_all "$class")"
+    class="$(split "$class" " " 1)"
+    trim_quotes "$class"
 }
 
 node_is_window() {
@@ -92,7 +122,7 @@ detach() {
     fi
 
     children_no=$(get_children_no "$id")
-    childid=$(get_children "$id" | head -n1)
+    childid=$(head 1 <(get_children "$id"))
     rootid=$(get_root_wid)
 
     xdotool windowreparent "$childid" "$rootid"

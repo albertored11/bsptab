@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 
+split() {
+    # Usage: split "string" "delimiter" "field"
+    IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
+    printf '%s\n' "${arr[$3]}"
+}
+
 id=$1
 
-bspc subscribe node_add | while read -r node; do
-    node=$(echo "$node" | cut -d ' ' -f5)
+ while IFS= read -r node; do
+    node="$(split "$node" " " 4)"
 
-    [[ -z $(bspc query -N -n "$node".tiled) ]] && continue
+    bspc query -N -n "$node".tiled &> /dev/null || continue
 
     if [[ "$(bspc query -N "$node" -n @brother)" == "$id" ]]; then
         bspc config -n "$node" border_width 0
         xdotool windowreparent "$node" "$id"
     fi
-done
+done < <(bspc subscribe node_add)

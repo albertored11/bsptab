@@ -1,10 +1,40 @@
 #!/usr/bin/env bash
 
-bspc subscribe node_geometry | while read -r id; do
-    [[ -z $(bspc query -N -n .local.fullscreen) ]] || continue
+# shellcheck disable=SC2086,SC2048
+trim_all() {
+    # Usage: trim_all "   example   string    "
+    set -f
+    set -- $*
+    printf '%s\n' "$*"
+    set +f
+}
 
-    id=$(echo "$id" | cut -d ' ' -f4)
-    class="$(xprop -id "$id" 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"')"
+split() {
+    # Usage: split "string" "delimiter" "field"
+    IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
+    printf '%s\n' "${arr[$3]}"
+}
+
+trim_quotes() {
+    # Usage: trim_quotes "string"
+    : "${1//\'}"
+    printf '%s\n' "${_//\"}"
+}
+
+get_class() {
+	id=$1
+
+    class="$(xprop -id "$id" 8s '\t$0' WM_CLASS)"
+    class="$(trim_all "$class")"
+    class="$(split "$class" " " 1)"
+    trim_quotes "$class"
+}
+
+ while IFS= read -r id; do
+    bspc query -N -n .local.fullscreen &> /dev/null && continue
+
+    id="$(split "$id" " " 3)"
+    class="$(get_class "$id")"
 
     if [[ "$class" == "tabbed" ]]; then
         focusedid=$(bspc query -N -n)
@@ -14,4 +44,4 @@ bspc subscribe node_geometry | while read -r id; do
             bspc node -f "$focusedid"
         fi
     fi
-done
+done < <(bspc subscribe node_geometry)
