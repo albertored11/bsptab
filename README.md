@@ -30,34 +30,34 @@ a bash expert at all.
 
 * `tabc create` command
 
-![tabc create command](demos/bsptab-create.gif)
+![tabc create command](https://raw.githubusercontent.com/albertored11/albertored11.github.io/main/assets/img/bsptab-demos/bsptab-create.gif)
 
 Open a Chromium window, create a tabbed container using a keyboard shortcut and open new windows as
 tabs.
 
 * `tabc attach` command
 
-![tabc attach command](demos/bsptab-attach.gif)
+![tabc attach command](https://raw.githubusercontent.com/albertored11/albertored11.github.io/main/assets/img/bsptab-demos/bsptab-attach.gif)
 
 Attach window (right) to a tabbed container (left) using a keyboard shortcut.
 
 * `tabc detach` command
 
-![tabc detach command](demos/bsptab-detach.gif)
+![tabc detach command](https://raw.githubusercontent.com/albertored11/albertored11.github.io/main/assets/img/bsptab-demos/bsptab-detach.gif)
 
 Detach a couple of windows from a tabbed container and then combine them to create a new container
 (again, using keyboard shortcuts).
 
 * `tabc autoattach` command
 
-![tabc autoattach command](demos/bsptab-autoattach.gif)
+![tabc autoattach command](https://raw.githubusercontent.com/albertored11/albertored11.github.io/main/assets/img/bsptab-demos/bsptab-autoattach.gif)
 
 Toggle autoattach function using a keyboard shortcut: first, it is enabled, so new windows appear as
 tabs; then, it is disabled, so new windows are placed as usual
 
 * `tabbed-auto` script
 
-![tabbed-auto script](demos/bsptab-tabbed-auto.gif)
+![tabbed-auto script](https://raw.githubusercontent.com/albertored11/albertored11.github.io/main/assets/img/bsptab-demos/bsptab-tabbed-auto.gif)
 
 
 Open an instance of pcmanfm-qt, and a tabbed container is automatically created, so every new window
