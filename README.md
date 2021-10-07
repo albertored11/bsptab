@@ -138,12 +138,12 @@ Available commands:
 * `autoattach <wid>` Toggle autoattach new windows to tabbed container `<wid>`. If `<wid>` is not a
   tabbed container, don't do anything.
 * `autod <classes>` launch a daemon that creates a tabbed container for every new window which class
-  is in <classes>. This can be useful, for example, for file managers, so it and the opened file
+  is in `<classes>`. This can be useful, for example, for file managers, so it and the opened file
   share a tabbed layout. It could be a good idea to include this command in your `bspwmrc`.
 * `refreshd` Launch a daemon that does its job as a workaround for a bug that makes the tab
   bar width not to be correctly adjusted sometimes when the size of the tabbed container changes.
   It could be a good idea to include this command in your `bspwmrc`.
-* `printclass <wid>` Print class of window <wid>.
+* `printclass <wid>` Print class of window `<wid>`.
 
 ### tabbed-sub, tabbed-unsub
 
