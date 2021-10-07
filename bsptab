@@ -13,6 +13,12 @@ commands:
     detach <wid>            detach active window from tabbed container <wid>.
     autoattach <wid>        toggle autoattach new windows to tabbed container
                             <wid> (enabled by default).
+    autod <classes>         launch a daemon that creates a tabbed container
+                            for every new window which class is in <classes>.
+    refreshd                launch a daemon that does its job as a workaround
+                            for a bug that makes the tab bar width not to be
+                            correctly adjusted sometimes when the size of the
+                            tabbed container changes.
 "
 
 exit 1
@@ -79,6 +85,11 @@ node_is_window() {
 create() {
     id=$1
 
+    if [[ -z $id ]]; then
+        printf "error: id of window not specified\n" >&2
+        exit 1
+    fi
+
     if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
         exit 1
@@ -103,6 +114,11 @@ create() {
 
 detach() {
     id=$1
+
+    if [[ -z $id ]]; then
+        printf "error: id of window not specified\n" >&2
+        exit 1
+    fi
 
     if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
@@ -171,8 +187,13 @@ attach() {
     focusedid=$1
     otherid=$2
 
+    if [[ -z $focusedid ]]; then
+        printf "error: id of first node not specified\n" >&2
+        exit 1
+    fi
+
     if [[ -z $otherid ]]; then
-        printf "error: id of window to attach not specified\n" >&2
+        printf "error: id of second node not specified\n" >&2
         exit 1
     fi
 
@@ -207,6 +228,11 @@ attach() {
 
 autoattach() {
     id=$1
+
+    if [[ -z $id ]]; then
+        printf "error: id of window not specified\n" >&2
+        exit 1
+    fi
 
     if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
@@ -246,6 +272,48 @@ autoattach() {
     fi
 }
 
+autod() {
+    classes="$*"
+
+    if [[ -z $classes ]]; then
+        printf "error: no class specified\n" >&2
+        exit 1
+    fi
+
+    while IFS= read -r id; do
+        sleep 0.1
+
+        id="$(split "$id" " " 4)"
+
+        bspc query -N -n "$id".tiled &> /dev/null || continue
+
+        class="$(get_class "$id")"
+        focusedid=$(bspc query -N -n) || continue
+
+        if [[ "$classes" =~ $class ]]; then
+            tabc create "$focusedid"
+        fi
+    done < <(bspc subscribe node_add)
+}
+
+refreshd() {
+    while IFS= read -r id; do
+        bspc query -N -n .local.fullscreen &> /dev/null && continue
+
+        id="$(split "$id" " " 3)"
+        class="$(get_class "$id")"
+
+        if [[ "$class" == "tabbed" ]]; then
+            focusedid=$(bspc query -N -n)
+
+            if [[ "$id" != "$focusedid" ]]; then
+                bspc node -f "$id"
+                bspc node -f "$focusedid"
+            fi
+        fi
+    done < <(bspc subscribe node_geometry)
+}
+
 get_command() {
     case "$1" in
         create)
@@ -264,6 +332,13 @@ get_command() {
             shift
             autoattach "$@"
         ;;
+        autod)
+            shift
+            autod "$@"
+        ;;
+        refreshd)
+            refreshd
+        ;;
         *)
             usage
         ;;
@@ -271,8 +346,6 @@ get_command() {
 }
 
 main() {
-    [[ "$#" -le 1 ]] && usage
-
     get_command "$@"
 
     return 0
