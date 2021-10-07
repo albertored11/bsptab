@@ -76,7 +76,11 @@ get_class() {
         exit 1
     fi
 
-    class="$(xprop -id "$id" 8s '\t$0' WM_CLASS)"
+    if ! class="$(xprop -id "$id" 8s '\t$0' WM_CLASS 2> /dev/null)"; then
+        printf "error: invalid window id\n" >&2
+        exit 1
+    fi
+
     class="$(trim_all "$class")"
     class="$(split "$class" " " 1)"
     trim_quotes "$class"
@@ -293,7 +297,7 @@ autod() {
 
         bspc query -N -n "$id".tiled &> /dev/null || continue
 
-        class="$(get_class "$id")"
+        class="$(get_class "$id" 2> /dev/null)" || continue
         focusedid=$(bspc query -N -n) || continue
 
         if [[ "$classes" =~ $class ]]; then
@@ -307,7 +311,7 @@ refreshd() {
         bspc query -N -n .local.fullscreen &> /dev/null && continue
 
         id="$(split "$id" " " 3)"
-        class="$(get_class "$id")"
+        class="$(get_class "$id" 2> /dev/null)" || continue
 
         if [[ "$class" == "tabbed" ]]; then
             focusedid=$(bspc query -N -n)
