@@ -71,7 +71,7 @@ get_children_no() {
 get_class() {
 	id=$1
 
-	if [[ -z $id ]]; then
+    if [[ -z $id ]]; then
         printf "error: id of window not specified\n" >&2
         exit 1
     fi
