@@ -19,6 +19,7 @@ commands:
                             for a bug that makes the tab bar width not to be
                             correctly adjusted sometimes when the size of the
                             tabbed container changes.
+    printclass <wid>        print class of window <wid>.
 "
 
 exit 1
@@ -69,6 +70,11 @@ get_children_no() {
 
 get_class() {
 	id=$1
+
+	if [[ -z $id ]]; then
+        printf "error: id of window not specified\n" >&2
+        exit 1
+    fi
 
     class="$(xprop -id "$id" 8s '\t$0' WM_CLASS)"
     class="$(trim_all "$class")"
@@ -338,6 +344,10 @@ get_command() {
         ;;
         refreshd)
             refreshd
+        ;;
+        printclass)
+            shift
+            get_class "$@"
         ;;
         *)
             usage
