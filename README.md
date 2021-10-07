@@ -171,7 +171,7 @@ ctrl + alt + {Left,Down,Up,Right}
 # create/remove from tabbed container
 super + z 
     id=$(bspc query -N -n); \
-    [[ "$(xprop -id $id 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"')" == "tabbed" ]] \
+    [[ "$(tabc printclass $id)" == "tabbed" ]] \
     && tabc detach $id \
     || tabc create $id 
 
