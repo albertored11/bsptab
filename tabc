@@ -13,6 +13,13 @@ commands:
     detach <wid>            detach active window from tabbed container <wid>.
     autoattach <wid>        toggle autoattach new windows to tabbed container
                             <wid> (enabled by default).
+    autod <classes>         launch a daemon that creates a tabbed container
+                            for every new window which class is in <classes>.
+    refreshd                launch a daemon that does its job as a workaround
+                            for a bug that makes the tab bar width not to be
+                            correctly adjusted sometimes when the size of the
+                            tabbed container changes.
+    printclass <wid>        print class of window <wid>.
 "
 
 exit 1
@@ -46,13 +53,13 @@ head() {
 }
 
 get_root_wid() {
-	awk '/Window id:/{print $4}' <(xwininfo -root)
+    awk '/Window id:/{print $4}' <(xwininfo -root)
 }
 
 get_children() {
-	id=$1
+    id=$1
 
-	awk '$1 ~ /0x.*/{print $1}' <(xwininfo -id "$id" -children)
+    awk '$1 ~ /0x.*/{print $1}' <(xwininfo -id "$id" -children)
 }
 
 get_children_no() {
@@ -62,9 +69,18 @@ get_children_no() {
 }
 
 get_class() {
-	id=$1
+    id=$1
 
-    class="$(xprop -id "$id" 8s '\t$0' WM_CLASS)"
+    if [[ -z $id ]]; then
+        printf "error: id of window not specified\n" >&2
+        exit 1
+    fi
+
+    if ! class="$(xprop -id "$id" 8s '\t$0' WM_CLASS 2> /dev/null)"; then
+        printf "error: invalid window id\n" >&2
+        exit 1
+    fi
+
     class="$(trim_all "$class")"
     class="$(split "$class" " " 1)"
     trim_quotes "$class"
@@ -78,6 +94,11 @@ node_is_window() {
 
 create() {
     id=$1
+
+    if [[ -z $id ]]; then
+        printf "error: id of window not specified\n" >&2
+        exit 1
+    fi
 
     if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
@@ -103,6 +124,11 @@ create() {
 
 detach() {
     id=$1
+
+    if [[ -z $id ]]; then
+        printf "error: id of window not specified\n" >&2
+        exit 1
+    fi
 
     if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
@@ -171,8 +197,13 @@ attach() {
     focusedid=$1
     otherid=$2
 
+    if [[ -z $focusedid ]]; then
+        printf "error: id of first node not specified\n" >&2
+        exit 1
+    fi
+
     if [[ -z $otherid ]]; then
-        printf "error: id of window to attach not specified\n" >&2
+        printf "error: id of second node not specified\n" >&2
         exit 1
     fi
 
@@ -207,6 +238,11 @@ attach() {
 
 autoattach() {
     id=$1
+
+    if [[ -z $id ]]; then
+        printf "error: id of window not specified\n" >&2
+        exit 1
+    fi
 
     if ! node_is_window "$id"; then
         printf "error: node is not a window\n" >&2
@@ -246,6 +282,48 @@ autoattach() {
     fi
 }
 
+autod() {
+    classes="$*"
+
+    if [[ -z $classes ]]; then
+        printf "error: no class specified\n" >&2
+        exit 1
+    fi
+
+    while IFS= read -r id; do
+        sleep 0.1
+
+        id="$(split "$id" " " 4)"
+
+        bspc query -N -n "$id".tiled &> /dev/null || continue
+
+        class="$(get_class "$id" 2> /dev/null)" || continue
+        focusedid=$(bspc query -N -n) || continue
+
+        if [[ "$classes" =~ $class ]]; then
+            tabc create "$focusedid"
+        fi
+    done < <(bspc subscribe node_add)
+}
+
+refreshd() {
+    while IFS= read -r id; do
+        bspc query -N -n .local.fullscreen &> /dev/null && continue
+
+        id="$(split "$id" " " 3)"
+        class="$(get_class "$id" 2> /dev/null)" || continue
+
+        if [[ "$class" == "tabbed" ]]; then
+            focusedid=$(bspc query -N -n)
+
+            if [[ "$id" != "$focusedid" ]]; then
+                bspc node -f "$id"
+                bspc node -f "$focusedid"
+            fi
+        fi
+    done < <(bspc subscribe node_geometry)
+}
+
 get_command() {
     case "$1" in
         create)
@@ -264,6 +342,17 @@ get_command() {
             shift
             autoattach "$@"
         ;;
+        autod)
+            shift
+            autod "$@"
+        ;;
+        refreshd)
+            refreshd
+        ;;
+        printclass)
+            shift
+            get_class "$@"
+        ;;
         *)
             usage
         ;;
@@ -271,8 +360,6 @@ get_command() {
 }
 
 main() {
-    [[ "$#" -le 1 ]] && usage
-
     get_command "$@"
 
     return 0

@@ -55,9 +55,9 @@ Detach a couple of windows from a tabbed container and then combine them to crea
 Toggle autoattach function using a keyboard shortcut: first, it is enabled, so new windows appear as
 tabs; then, it is disabled, so new windows are placed as usual
 
-* `tabbed-auto` script
+* `tabc autod` command
 
-![tabbed-auto script](https://raw.githubusercontent.com/albertored11/albertored11.github.io/main/assets/img/bsptab-demos/bsptab-tabbed-auto.gif)
+![tabc autod command](https://raw.githubusercontent.com/albertored11/albertored11.github.io/main/assets/img/bsptab-demos/bsptab-tabbed-auto.gif)
 
 
 Open an instance of pcmanfm-qt, and a tabbed container is automatically created, so every new window
@@ -122,7 +122,7 @@ If you are using a pacman-based distro (Arch, Manjaro...), you can use [the AUR 
 ### tabc
 
 This script is used to manage tabbed containers (creating, attaching/detaching windows and toggling
-autoattach feature).
+autoattach feature), as well as to launch helper daemons.
 
 Run `tabc <command>`.
 
@@ -137,6 +137,13 @@ Available commands:
   container, don't do anything.
 * `autoattach <wid>` Toggle autoattach new windows to tabbed container `<wid>`. If `<wid>` is not a
   tabbed container, don't do anything.
+* `autod <classes>` launch a daemon that creates a tabbed container for every new window which class
+  is in `<classes>`. This can be useful, for example, for file managers, so it and the opened file
+  share a tabbed layout. It could be a good idea to include this command in your `bspwmrc`.
+* `refreshd` Launch a daemon that does its job as a workaround for a bug that makes the tab
+  bar width not to be correctly adjusted sometimes when the size of the tabbed container changes.
+  It could be a good idea to include this command in your `bspwmrc`.
+* `printclass <wid>` Print class of window `<wid>`.
 
 ### tabbed-sub, tabbed-unsub
 
@@ -146,26 +153,6 @@ container), it is automatically attached to it.
 
 You can use them running `tabbed-sub <wid> &; tabbed-unsub <wid> &`, but you won't probably need it
 since they are called from related `tabc` commands.
-
-### tabbed-auto
-
-The use of this script is entirely optional. It is used to automatically add a window to a new
-tabbed container when its class matches one of the classes specified as arguments.
-
-This can be useful, for example, for file managers, so it and the opened file share a tabbed layout.
-
-Run `tabbed-auto <class(es)>... &`.
-
-It could be a good idea to include this command in your `bspwmrc`.
-
-### tabbed-refresh
-
-This script is used as a workaround for a bug that makes the tab bar width not to be correctly
-adjusted sometimes when the size of the tabbed container changes.
-
-Run `tabbed-refresh &`.
-
-It could be a good idea to include this command in your `bspwmrc`.
 
 ## Keybindings
 
@@ -184,7 +171,7 @@ ctrl + alt + {Left,Down,Up,Right}
 # create/remove from tabbed container
 super + z 
     id=$(bspc query -N -n); \
-    [[ "$(xprop -id $id 8s '\t$0' WM_CLASS | cut -f2 | tr -d '"')" == "tabbed" ]] \
+    [[ "$(tabc printclass $id)" == "tabbed" ]] \
     && tabc detach $id \
     || tabc create $id 
 
@@ -197,4 +184,5 @@ super + shift + z
 
 * [x] Somehow fix a bug that makes the tab order to mess up when detaching a window.
 * [ ] When detaching a window, focus next tab to detached (prev tab if it was the last one).
-* [ ] Move common functions to a separate script file.
+* [ ] ~~Move common functions to a separate script file.~~
+* [ ] Put everything in a single file.
