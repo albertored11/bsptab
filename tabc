@@ -283,7 +283,8 @@ autoattach() {
             tabbed-sub "$id" &
             tabbed-unsub "$id" &
         else
-            printf "error: subscription process found, but unsubscription process not found\n" >&2
+            printf "error: subscription process found, but unsubscription \
+process not found\n" >&2
 
             kill "$tabbedsub_px"
 
@@ -291,7 +292,8 @@ autoattach() {
         fi
     else
         if [[ -z $tabbedsub_px ]]; then
-            printf "error: unsubscription process found, but subscription process not found\n" >&2
+            printf "error: unsubscription process found, but subscription \
+process not found\n" >&2
 
             kill "$tabbedunsub_px"
 
