@@ -7,24 +7,22 @@ a tool from [suckless](https://suckless.org/) to create tabbed containers in X e
 [bspwm](https://github.com/baskerville/bspwm), a tiling window manager based on binary space
 partitioning.
 
-bspwm is an awesome WM, but it only does its job: managing windows (and does it well). However,
+bspwm is an awesome WM, but it only does its job, which does it well: managing windows. However,
 bspwm is also extremely scriptable! With these scripts, you can easily organize windows into tabs,
 which is a really useful feature for many workflows.
 
 This project is based on [Bachhofer/tabc](https://github.com/Bachhofer/tabc).
 
-Please open an issue/pull request if you find any kind of bug, if you want any new features, or
+Please open an issue/pull request if you find any kind of bug, if you'd like to see any new features, or
 especially if you think any part of the code should be rewritten in a better way, since I am not
 a bash expert at all.
-
-**New!** bsptab is now available as [an AUR package](https://aur.archlinux.org/packages/bsptab-git/).
 
 ## Features
 
 * Adds tabbed layouts to bspwm.
 * Each tabbed container handles multiple windows, but not any more tabbed containers.
 * Automatically attach new windows to tabbed containers.
-* Only uses external scripts, without modifying original tabbed code.
+* Only external scripts, doesn't modify original tabbed code.
 
 ## Dependencies
 
@@ -78,7 +76,7 @@ static Key keys[] = {
 
 Just clone the repo and run `make install` inside the repo directory.
 
-If you are using a pacman-based distro (Arch, Manjaro...), you can use [the AUR package](https://aur.archlinux.org/packages/bsptab-git/).
+If you are using a pacman-based distro (Arch, Manjaro...), you can use [the AUR package](https://aur.archlinux.org/packages/bsptab-git/) (if you like it, please leave a vote 😁).
 
 ## Usage
 
@@ -100,7 +98,7 @@ Available commands:
   container, don't do anything.
 * `autoattach <wid>` Toggle autoattach new windows to tabbed container `<wid>`. If `<wid>` is not a
   tabbed container, don't do anything.
-* `autod <classes>` launch a daemon that creates a tabbed container for every new window which class
+* `autod <classes>` Launch a daemon that creates a tabbed container for every new window which class
   is in `<classes>`. This can be useful, for example, for file managers, so it and the opened file
   share a tabbed layout. It could be a good idea to include this command in your `bspwmrc`.
 * `refreshd` Launch a daemon that does its job as a workaround for a bug that makes the tab
