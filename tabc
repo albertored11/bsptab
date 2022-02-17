@@ -301,7 +301,7 @@ autod() {
         focusedid=$(bspc query -N -n) || continue
 
         if [[ "$classes" =~ $class ]]; then
-            tabc create "$focusedid"
+            create "$focusedid"
         fi
     done < <(bspc subscribe node_add)
 }
