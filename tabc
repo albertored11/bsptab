@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2086,SC2048
 #
 # bsptab: Suckless' tabbed integration into bspwm.
 # https://github.com/albertored11/bsptab
@@ -50,7 +51,6 @@ commands:
 exit 1
 }
 
-# shellcheck disable=SC2086,SC2048
 trim_all() {
     set -f
     set -- $*
