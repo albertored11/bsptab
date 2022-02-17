@@ -183,6 +183,6 @@ opened is added as a tab.
 ## TODO
 
 * [x] Somehow fix a bug that makes the tab order to mess up when detaching a window.
-* [ ] When detaching a window, focus next tab to detached (prev tab if it was the last one).
-* [ ] ~~Move common functions to a separate script file.~~
 * [ ] Put everything in a single file.
+* [ ] ~~When detaching a window, focus next tab to detached (prev tab if it was the last one).~~
+* [ ] ~~Move common functions to a separate script file.~~
