@@ -182,5 +182,6 @@ opened is added as a tab.
 
 * [x] Somehow fix a bug that makes the tab order to mess up when detaching a window.
 * [ ] Put everything in a single file.
+* [ ] Use local variables when possible.
 * [ ] ~~When detaching a window, focus next tab to detached (prev tab if it was the last one).~~
 * [ ] ~~Move common functions to a separate script file.~~
