@@ -329,6 +329,7 @@ autod() {
     done < <(bspc subscribe node_add)
 }
 
+# TODO does not trigger when moving to another desktop
 refreshd() {
     while IFS= read -r id; do
         bspc query -N -n .local.fullscreen &> /dev/null && continue
