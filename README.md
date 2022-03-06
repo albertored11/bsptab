@@ -74,9 +74,14 @@ static Key keys[] = {
 
 ## Installation
 
+<a href="https://repology.org/project/bsptab/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/bsptab.svg" alt="Packaging status" align="right">
+</a>
+
 Just clone the repo and run `make install` inside the repo directory.
 
 If you are using a pacman-based distro (Arch, Manjaro...), you can use [the AUR package](https://aur.archlinux.org/packages/bsptab-git/) (if you like it, please leave a vote 😁).
+And, for debian or ubuntu or distros based on them, checkout [MPR](https://mpr.makedeb.org/packages/bsptab-git)
 
 ## Usage
 
