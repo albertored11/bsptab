@@ -184,3 +184,4 @@ opened is added as a tab.
 * [ ] Put everything in a single file.
 * [ ] ~~When detaching a window, focus next tab to detached (prev tab if it was the last one).~~
 * [ ] ~~Move common functions to a separate script file.~~
+* [ ] Consider hidden nodes, that currently screw up tabbed layouts when detaching.
